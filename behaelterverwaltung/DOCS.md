@@ -18,17 +18,7 @@ Die Daten liegen im App-eigenen Speicher und bleiben bei Updates erhalten. Sie s
 
 ## Daten sichern und umziehen
 
-Unter **Verwaltung → Einstellungen → Daten herunterladen** gibt es eine Datei mit allen Daten. Die Daten sind außerdem in jeder Home-Assistant-Sicherung enthalten.
-
-Umzug in eine neu installierte App, z. B. von einer selbst kopierten Version zur Installation aus diesem Repository:
-
-1. Beide Apps auf **dieselbe Version** bringen.
-2. Zur Sicherheit eine Home-Assistant-Teilsicherung der alten App anlegen.
-3. In der alten App **Daten herunterladen**.
-4. Die alte App **stoppen**, denn beide nutzen Port 8099. Danach die neue App starten und dieselbe Basis-URL eintragen.
-5. In der neuen App unter Einstellungen die Datei **einspielen**. Das geht nur, solange dort noch keine Behälter angelegt sind.
-6. Prüfen, ob alles da ist, und ein Etikett scannen. Die gedruckten QR-Codes gelten weiter.
-7. Erst dann die alte App deinstallieren.
+Unter **Verwaltung → Einstellungen** lassen sich alle Daten als Datei **herunterladen** und in eine neu installierte App wieder **einspielen**. Das Einspielen geht nur, solange dort noch keine Behälter angelegt sind, und beide Apps müssen dieselbe Version haben. Die Daten sind außerdem in jeder Home-Assistant-Sicherung enthalten.
 
 ## Einstellungen
 

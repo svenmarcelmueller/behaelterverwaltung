@@ -2,7 +2,7 @@
 
 ## 0.9.0
 
-- Verwaltung → Einstellungen: **Daten herunterladen** als JSON-Datei (Behälter, Einlagerungen samt Historie, Fächer, Aufklebergrößen, Einstellungen) und **Daten einspielen** in eine neu installierte App. Einspielen geht nur, solange noch keine Behälter angelegt sind, und gelingt ganz oder gar nicht. Anleitung zum Umzug in der Dokumentation.
+- Verwaltung → Einstellungen: **Daten herunterladen** als JSON-Datei (Behälter, Einlagerungen samt Historie, Fächer, Aufklebergrößen, Einstellungen) und **Daten einspielen** in eine neu installierte App. Einspielen geht nur, solange noch keine Behälter angelegt sind, und gelingt ganz oder gar nicht.
 - Keine Änderung am Datenbankschema.
 
 ## 0.8.0

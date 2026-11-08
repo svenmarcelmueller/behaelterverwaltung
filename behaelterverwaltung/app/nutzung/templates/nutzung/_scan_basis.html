@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+{% block body_klasse %}scan{% endblock %}
+{% block kopf %}
+<header class="scan-kopf">
+  <a class="zurueck" href="{{ url_for('nutzung.uebersicht') }}">{% include "icons/zurueck.svg" %}Übersicht</a>
+  <div class="scan-kopf-zeile">
+    <div class="behaelter-id">
+      <span class="behaelter-id-label">Behälter</span>
+      <span class="behaelter-code">{{ code_anzeige }}</span>
+    </div>
+    {% block status %}{% endblock %}
+  </div>
+</header>
+{% endblock %}
+{% block unten %}{% endblock %}

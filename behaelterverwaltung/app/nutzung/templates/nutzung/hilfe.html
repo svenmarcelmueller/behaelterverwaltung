@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+{% block titel %}Hilfe · Behälterverwaltung{% endblock %}
+{% block inhalt %}
+<h1>So scannst du einen Behälter</h1>
+<p class="einleitung">Sobald das iPhone den QR-Code auf dem Aufkleber erkennt, öffnet sich die Seite des Behälters. Dort siehst du den Inhalt oder lagerst etwas ein.</p>
+
+<section class="karte karte-hervor">
+  <div class="karte-kopf">
+    <span class="icon-feld icon-feld-akzent">{% include "icons/code_scanner.svg" %}</span>
+    <div>
+      <span class="ueberzeile">Empfohlen</span>
+      <h2>Code-Scanner im Kontrollzentrum</h2>
+    </div>
+  </div>
+  <ol class="schritte">
+    <li>Vom oberen rechten Bildschirmrand nach unten wischen.</li>
+    <li>Auf das Symbol <strong>Code-Scanner</strong> tippen.</li>
+    <li>Auf den Aufkleber richten. Die Behälterseite öffnet sich direkt.</li>
+  </ol>
+  <p class="leise">Fehlt das Symbol, kannst du es im Kontrollzentrum hinzufügen. Funktioniert auch bei gesperrtem iPhone.</p>
+</section>
+
+<section class="karte">
+  <div class="karte-kopf">
+    <span class="icon-feld">{% include "icons/kamera.svg" %}</span>
+    <h2>Kamera-App</h2>
+  </div>
+  <ol class="schritte">
+    <li>Kamera öffnen, auch vom Sperrbildschirm aus.</li>
+    <li>Auf den Aufkleber richten.</li>
+    <li>Auf den eingeblendeten Link tippen.</li>
+  </ol>
+</section>
+
+<section class="karte">
+  <h2>Code von Hand eingeben</h2>
+  <p>Ist der QR-Code beschädigt, tipp den 6-stelligen Code unter dem QR-Code ein.</p>
+  <form class="code-form" method="get" action="{{ url_for('nutzung.code_eingeben') }}">
+    <label for="code" class="nur-vorlesen">Code</label>
+    <div class="code-form-zeile">
+      <input id="code" name="code" type="text" autocapitalize="characters" autocomplete="off"
+             maxlength="6" placeholder="K7F3QX" class="mono">
+      <button type="submit" class="knopf knopf-haupt">Öffnen</button>
+    </div>
+  </form>
+</section>
+
+<section class="karte">
+  <h2>Dein Name</h2>
+  <p>Bei jeder Einlagerung wird vermerkt, wer sie gemacht hat. Der Name wird nur auf diesem Gerät gespeichert.</p>
+  <p class="name-hinweis name-hinweis-links">
+    <span data-name-text>Ohne Namen</span>
+    <span aria-hidden="true">·</span>
+    <button type="button" class="textknopf" data-name-aendern>Name festlegen</button>
+  </p>
+</section>
+{% endblock %}

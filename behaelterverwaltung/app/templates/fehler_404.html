@@ -1,0 +1,7 @@
+{% extends "base.html" %}
+{% block titel %}Nicht gefunden · Behälterverwaltung{% endblock %}
+{% block inhalt %}
+<h1>Seite nicht gefunden</h1>
+<p>Diese Adresse gibt es hier nicht.</p>
+<p><a class="knopf knopf-zweit" href="{{ url_for('nutzung.uebersicht') }}">Zur Übersicht</a></p>
+{% endblock %}

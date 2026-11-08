@@ -1,0 +1,42 @@
+{% macro status_chip(status) -%}
+{% if status == "belegt" -%}
+<span class="chip chip-belegt"><svg aria-hidden="true" width="10" height="10" viewBox="0 0 10 10"><circle cx="5" cy="5" r="4" fill="currentColor"/></svg>Belegt</span>
+{%- elif status == "leer" -%}
+<span class="chip chip-leer"><svg aria-hidden="true" width="10" height="10" viewBox="0 0 10 10"><circle cx="5" cy="5" r="4" fill="none" stroke="currentColor" stroke-width="2"/></svg>Leer</span>
+{%- else -%}
+<span class="chip chip-aus">Stillgelegt</span>
+{%- endif %}
+{%- endmacro %}
+
+{% macro meldungen(meldung, fehler) -%}
+{% if meldung %}<p class="hinweis hinweis-ok" role="status">{{ meldung }}</p>{% endif %}
+{% if fehler %}<p class="hinweis hinweis-fehler" role="alert">{{ fehler }}</p>{% endif %}
+{%- endmacro %}
+
+{% macro fach_kacheln(faecher, gewaehlt) -%}
+<fieldset class="fach-auswahl">
+  <legend>Fach</legend>
+  <div class="fach-kacheln" style="--spalten: {{ [faecher|length, 3]|min if faecher else 1 }}">
+    {% for fach in faecher %}
+    <label class="fach-kachel">
+      <input type="radio" name="fach" value="{{ fach.id }}" {% if fach.id == gewaehlt %}checked{% endif %}>
+      <span>{{ fach.name }}</span>
+    </label>
+    {% endfor %}
+  </div>
+</fieldset>
+{%- endmacro %}
+
+{#- Formular per htmx im Hintergrund senden: Safari warnt bei klassischem Formular-Versand über http.
+    Ohne JavaScript bleibt es ein normales Formular. Knopf ist während des Sendens gesperrt (Doppel-Tap). -#}
+{% macro im_hintergrund() -%}
+hx-boost="true" hx-disabled-elt="find button[type=submit]" data-name-senden
+{%- endmacro %}
+
+{% macro name_hinweis() -%}
+<p class="name-hinweis">
+  <span data-name-text>Ohne Namen</span>
+  <span aria-hidden="true">·</span>
+  <button type="button" class="textknopf" data-name-aendern>Name festlegen</button>
+</p>
+{%- endmacro %}

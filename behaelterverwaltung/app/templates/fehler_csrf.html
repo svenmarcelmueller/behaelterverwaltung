@@ -1,0 +1,7 @@
+{% extends "base.html" %}
+{% block titel %}Bitte neu laden · Behälterverwaltung{% endblock %}
+{% block inhalt %}
+<h1>Bitte noch einmal versuchen</h1>
+<p>Die Seite war zu alt oder wurde von woanders abgeschickt. Es wurde nichts gespeichert.</p>
+<p><a class="knopf knopf-haupt" href="{{ request.referrer or url_for('nutzung.uebersicht') }}">Seite neu laden</a></p>
+{% endblock %}

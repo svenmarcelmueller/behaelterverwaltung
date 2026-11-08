@@ -1,0 +1,18 @@
+{% extends "nutzung/_scan_basis.html" %}
+{% set code_anzeige = code %}
+{% block titel %}{{ code }} · unbekannt{% endblock %}
+{% block status %}<span class="chip chip-aus">Unbekannt</span>{% endblock %}
+{% block hauptteil %}
+<main class="seite scan-inhalt">
+  <h1>Diesen Behälter gibt es nicht</h1>
+  <p>Zum Code <strong class="mono">{{ code }}</strong> ist kein Behälter angelegt. Vielleicht wurde der Code falsch abgetippt, oder das Etikett stammt aus einer anderen Installation.</p>
+  <form class="code-form" method="get" action="{{ url_for('nutzung.code_eingeben') }}">
+    <label for="code">Code erneut eingeben</label>
+    <div class="code-form-zeile">
+      <input id="code" name="code" type="text" inputmode="text" autocapitalize="characters" autocomplete="off"
+             maxlength="6" placeholder="K7F3QX" class="mono">
+      <button type="submit" class="knopf knopf-haupt">Öffnen</button>
+    </div>
+  </form>
+</main>
+{% endblock %}

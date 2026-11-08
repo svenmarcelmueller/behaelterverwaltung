@@ -1,0 +1,36 @@
+{% from "nutzung/_status.html" import status_chip %}
+{% if treffer %}
+<ul class="liste">
+  {% for t in treffer %}
+  <li>
+    <a class="eintrag" href="{{ url_for('nutzung.behaelter', code=t.code) }}">
+      <span class="eintrag-text">
+        {% if t.status == "belegt" %}
+        <span class="eintrag-kopf">
+          <span class="eintrag-name">{{ t.inhalt_name }}</span>
+          <span class="eintrag-datum">– {{ t.eingelagert_am | datum_kurz }}</span>
+        </span>
+        {% else %}
+        <span class="eintrag-name">{{ status_chip("leer") }}</span>
+        {% endif %}
+        {% if t.bezeichnung %}
+        <span class="eintrag-behaelter">{% include "icons/uebersicht.svg" %}<span>{{ t.bezeichnung }}</span></span>
+        {% endif %}
+        {% if t.status == "belegt" %}
+        <span class="eintrag-meta">Fach {{ t.fach_name or "–" }}{% if t.eingelagert_von %} · {{ t.eingelagert_von }}{% endif %}</span>
+        {% elif not t.bezeichnung %}
+        <span class="eintrag-meta">frei zum Befüllen</span>
+        {% endif %}
+      </span>
+      <span class="code-marke">{{ t.code }}</span>
+    </a>
+  </li>
+  {% endfor %}
+</ul>
+<p class="leise anzahl">{{ treffer | length }} Behälter angezeigt</p>
+{% else %}
+<p class="leer-hinweis">
+  {% if f.q or f.fach or f.status or f.von or f.bis %}Nichts gefunden. Versuch einen anderen Suchbegriff oder weniger Filter.
+  {% else %}Noch keine Behälter angelegt. Das geht in der Verwaltung über die Home-Assistant-Seitenleiste.{% endif %}
+</p>
+{% endif %}

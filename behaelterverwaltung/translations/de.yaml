@@ -1,0 +1,6 @@
+configuration:
+  basis_url:
+    name: "Basis-URL"
+    description: "Adresse, die in die QR-Codes gedruckt wird, z. B. http://192.168.1.10:8099. Leer lassen, solange noch keine Etiketten gedruckt werden."
+network:
+  8099/tcp: "Direktzugang für die QR-Codes (ohne Login, nur Nutzung)"

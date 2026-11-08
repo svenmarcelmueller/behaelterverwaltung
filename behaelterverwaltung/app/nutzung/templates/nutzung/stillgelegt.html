@@ -1,0 +1,12 @@
+{% extends "nutzung/_scan_basis.html" %}
+{% from "nutzung/_status.html" import status_chip %}
+{% set code_anzeige = behaelter.code %}
+{% block titel %}{{ behaelter.code }} · stillgelegt{% endblock %}
+{% block status %}{{ status_chip("stillgelegt") }}{% endblock %}
+{% block hauptteil %}
+<main class="seite scan-inhalt">
+  <h1>Dieser Behälter ist stillgelegt</h1>
+  <p>Er wurde am {{ behaelter.entfernt_am | datum_kurz }} aus der Verwaltung genommen und kann nicht mehr befüllt werden. Das Etikett kann entfernt werden.</p>
+  <a class="link-mit-icon" href="{{ url_for('nutzung.historie', code=behaelter.code) }}">{% include "icons/uhr.svg" %}Frühere Inhalte ansehen</a>
+</main>
+{% endblock %}

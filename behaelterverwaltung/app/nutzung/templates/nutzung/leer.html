@@ -1,0 +1,43 @@
+{% extends "nutzung/_scan_basis.html" %}
+{% from "nutzung/_status.html" import status_chip, meldungen, fach_kacheln, name_hinweis, im_hintergrund %}
+{% set code_anzeige = behaelter.code %}
+{% block titel %}{{ behaelter.code }} · leer{% endblock %}
+{% block status %}{{ status_chip("leer") }}{% endblock %}
+{% block hauptteil %}
+<form class="scan-form" method="post" action="{{ url_for('nutzung.einlagern', code=behaelter.code) }}" {{ im_hintergrund() }}>
+  <input type="hidden" name="csrf" value="{{ csrf_token() }}">
+  <input type="hidden" name="von" value="" data-name-feld>
+
+  <main class="seite scan-inhalt">
+    {{ meldungen(meldung, fehler) }}
+    <h1>Was legst du hinein?</h1>
+
+    <div class="feld">
+      <label for="inhalt">Inhalt</label>
+      <input id="inhalt" name="inhalt" type="text" required maxlength="120"
+             placeholder="z. B. Gemüse, Fleisch" value="{{ werte.inhalt or '' }}"
+             autocomplete="off" enterkeyhint="done" {% if not meldung %}autofocus{% endif %}>
+    </div>
+
+    <div class="feld">
+      <label for="beschreibung">Beschreibung <span class="leise">(optional)</span></label>
+      <textarea id="beschreibung" name="beschreibung" rows="2" maxlength="1000"
+                placeholder="Details, Menge, Hinweise …">{{ werte.beschreibung or '' }}</textarea>
+    </div>
+
+    {% if faecher %}
+    {{ fach_kacheln(faecher, gewaehlt) }}
+    {% if letztes_fach %}
+    <p class="feld-hinweis">Zuletzt genutzt: {{ (faecher | selectattr("id", "equalto", letztes_fach) | map(attribute="name") | first) or "–" }}</p>
+    {% endif %}
+    {% endif %}
+
+    <p class="leise"><a href="{{ url_for('nutzung.historie', code=behaelter.code) }}">Historie dieses Behälters</a></p>
+  </main>
+
+  <footer class="aktionsleiste">
+    <button type="submit" class="knopf knopf-haupt knopf-gross">Einlagern</button>
+    {{ name_hinweis() }}
+  </footer>
+</form>
+{% endblock %}

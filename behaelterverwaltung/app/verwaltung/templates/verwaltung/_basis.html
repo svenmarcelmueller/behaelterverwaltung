@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{% block inhalt %}
+{% set ep = request.endpoint or '' %}
+<nav class="unternav" aria-label="Verwaltung">
+  <a href="{{ url_for('verwaltung.behaelter') }}" {% if ep.startswith('verwaltung.behaelter') %}aria-current="page"{% endif %}>Behälter</a>
+  <a href="{{ url_for('verwaltung.etiketten_seite') }}" {% if ep.startswith('verwaltung.etiketten') or ep.startswith('verwaltung.format') %}aria-current="page"{% endif %}>Etiketten</a>
+  <a href="{{ url_for('verwaltung.faecher') }}" {% if ep.startswith('verwaltung.fach') %}aria-current="page"{% endif %}>Fächer</a>
+  <a href="{{ url_for('verwaltung.einstellungen') }}" {% if ep.startswith('verwaltung.einstellungen') %}aria-current="page"{% endif %}>Einstellungen</a>
+</nav>
+
+{% for art, text in get_flashed_messages(with_categories=true) %}
+<p class="hinweis {{ 'hinweis-fehler' if art == 'fehler' else 'hinweis-ok' }}" role="{{ 'alert' if art == 'fehler' else 'status' }}">{{ text }}</p>
+{% endfor %}
+
+{% block verwaltung %}{% endblock %}
+{% endblock %}

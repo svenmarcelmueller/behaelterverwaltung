@@ -1,0 +1,32 @@
+{% extends "verwaltung/_basis.html" %}
+{% block titel %}Fächer · Verwaltung{% endblock %}
+{% block verwaltung %}
+<section class="karte" aria-labelledby="faecher-titel">
+  <h2 id="faecher-titel">Fächer</h2>
+  <p class="leise klein">Die Reihenfolge gilt für die Fach-Kacheln beim Einlagern und für die Sortierung „Nach Fach“. Ein Fach, das schon verwendet wurde, kann nur umbenannt werden.</p>
+  <ol class="fach-liste">
+    {% for f in faecher %}
+    <li>
+      <form class="fach-zeile" method="post" action="{{ url_for('verwaltung.fach_aendern', fach_id=f.id) }}" hx-boost="true">
+        <input type="hidden" name="csrf" value="{{ csrf_token() }}">
+        <label for="fach-{{ f.id }}" class="nur-vorlesen">Name</label>
+        <input id="fach-{{ f.id }}" name="name" type="text" maxlength="40" value="{{ f.name }}" required>
+        <button type="submit" name="aktion" value="umbenennen" class="knopf knopf-zweit knopf-klein">Speichern</button>
+        <button type="submit" name="aktion" value="hoch" class="knopf knopf-zweit knopf-klein" aria-label="{{ f.name }} nach oben" formnovalidate {% if loop.first %}disabled{% endif %}>↑</button>
+        <button type="submit" name="aktion" value="runter" class="knopf knopf-zweit knopf-klein" aria-label="{{ f.name }} nach unten" formnovalidate {% if loop.last %}disabled{% endif %}>↓</button>
+        <button type="submit" name="aktion" value="loeschen" class="knopf knopf-gefahr knopf-klein" data-frage="Fach „{{ f.name }}“ löschen?" formnovalidate>Löschen</button>
+      </form>
+    </li>
+    {% endfor %}
+  </ol>
+
+  <form class="formular-zeile" method="post" action="{{ url_for('verwaltung.fach_anlegen') }}" hx-boost="true">
+    <input type="hidden" name="csrf" value="{{ csrf_token() }}">
+    <div class="feld feld-breit">
+      <label for="neues-fach">Neues Fach</label>
+      <input id="neues-fach" name="name" type="text" maxlength="40" placeholder="z. B. Boden" required>
+    </div>
+    <button type="submit" class="knopf knopf-haupt">Hinzufügen</button>
+  </form>
+</section>
+{% endblock %}

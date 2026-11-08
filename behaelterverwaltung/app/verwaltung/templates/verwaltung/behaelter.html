@@ -1,0 +1,103 @@
+{% extends "verwaltung/_basis.html" %}
+{% from "nutzung/_status.html" import status_chip %}
+{% block titel %}Behälter · Verwaltung{% endblock %}
+{% block verwaltung %}
+<section class="karte" aria-labelledby="neu-titel">
+  <h2 id="neu-titel">Neue Behälter anlegen</h2>
+  <form class="formular-zeile" method="post" action="{{ url_for('verwaltung.behaelter_anlegen') }}"
+        hx-boost="true" hx-disabled-elt="find button[type=submit]">
+    <input type="hidden" name="csrf" value="{{ csrf_token() }}">
+    <div class="feld feld-schmal">
+      <label for="anzahl">Anzahl</label>
+      <input id="anzahl" name="anzahl" type="number" inputmode="numeric" value="5" min="1" max="500" required>
+    </div>
+    <div class="feld feld-breit">
+      <label for="bezeichnung">Bezeichnung <span class="leise">(optional, für alle neuen)</span></label>
+      <input id="bezeichnung" name="bezeichnung" type="text" maxlength="60" placeholder="z. B. Box blau, groß">
+    </div>
+    <button type="submit" class="knopf knopf-haupt">Anlegen</button>
+  </form>
+  <p class="leise klein">Die Codes werden zufällig erzeugt. Danach kannst du die Etiketten direkt drucken.</p>
+  {% if neu %}
+  <p><a class="knopf knopf-zweit" href="{{ url_for('verwaltung.etiketten_seite', codes=neu|join(',')) }}">Etiketten für die {{ neu|length }} neuen drucken</a></p>
+  {% endif %}
+</section>
+
+<form method="post" action="{{ url_for('verwaltung.behaelter_auswahl') }}" class="behaelter-form" data-auswahl>
+  <input type="hidden" name="csrf" value="{{ csrf_token() }}">
+  <input type="hidden" name="filter" value="{{ filter }}">
+
+  <div class="liste-kopf">
+    <nav class="chips" aria-label="Filter">
+      {% for wert, name in filter_namen.items() %}
+      <a class="chip-link" href="{{ url_for('verwaltung.behaelter', filter=wert) }}" {% if filter == wert %}aria-current="true"{% endif %}>{{ name }} ({{ anzahl[wert] }})</a>
+      {% endfor %}
+    </nav>
+    {% if filter != "stillgelegt" and liste %}
+    <div class="auswahl-leiste">
+      <span data-auswahl-zahl>0 ausgewählt</span>
+      <button type="submit" name="aktion" value="etiketten" class="knopf knopf-haupt knopf-klein" data-auswahl-knopf disabled>Etiketten drucken</button>
+      <button type="submit" name="aktion" value="stilllegen" class="knopf knopf-gefahr knopf-klein" data-auswahl-knopf disabled
+              data-frage="Ausgewählte Behälter stilllegen? Belegte werden übersprungen.">Stilllegen</button>
+    </div>
+    {% endif %}
+  </div>
+
+  {% if filter != "stillgelegt" and liste %}
+  <div class="bezeichnung-leiste">
+    <label for="neue-bezeichnung">Bezeichnung der ausgewählten Behälter ändern</label>
+    <div class="bezeichnung-zeile">
+      <input id="neue-bezeichnung" name="neue_bezeichnung" type="text" maxlength="60" placeholder="z. B. Box blau, groß – leer lassen zum Entfernen"
+             data-enter-aktion="bezeichnung">
+      <button type="submit" name="aktion" value="bezeichnung" class="knopf knopf-zweit knopf-klein" data-auswahl-knopf disabled>Bezeichnung übernehmen</button>
+    </div>
+    <p class="leise klein">Ändert nur die Bezeichnung. Inhalt, Historie und gedruckte Etiketten bleiben, wie sie sind.</p>
+  </div>
+  {% endif %}
+
+  {% if liste %}
+  <div class="tabelle-rahmen">
+    <table class="tabelle">
+      <thead>
+        <tr>
+          {% if filter != "stillgelegt" %}<th scope="col" class="spalte-auswahl"><input type="checkbox" aria-label="Alle auswählen" data-alle></th>{% endif %}
+          <th scope="col">Code</th>
+          <th scope="col">Bezeichnung</th>
+          <th scope="col">Status</th>
+          <th scope="col">Aktueller Inhalt</th>
+          <th scope="col">Etikett</th>
+          <th scope="col">Angelegt</th>
+          <th scope="col"><span class="nur-vorlesen">Aktionen</span></th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for b in liste %}
+        <tr>
+          {% if filter != "stillgelegt" %}
+          <td class="spalte-auswahl"><input type="checkbox" name="codes" value="{{ b.code }}" aria-label="{{ b.code }} auswählen" {% if b.code in neu %}checked{% endif %}></td>
+          {% endif %}
+          <td class="mono"><a href="{{ url_for('nutzung.behaelter', code=b.code) }}">{{ b.code }}</a></td>
+          <td>{{ b.bezeichnung or "–" }}</td>
+          <td>{{ status_chip(b.status) }}</td>
+          <td class="leise-text">{{ b.inhalt_name or "–" }}</td>
+          <td>
+            {% if b.gedruckt_am %}<span class="leise-text">gedruckt {{ b.gedruckt_am | datum_kurz }}</span>
+            {% elif b.status != "stillgelegt" %}<span class="warn-text">nicht gedruckt</span>{% else %}–{% endif %}
+          </td>
+          <td class="leise-text">{{ b.erstellt_am | datum_kurz }}</td>
+          <td class="spalte-aktion">
+            {% if b.status != "stillgelegt" %}
+            <a class="knopf knopf-zweit knopf-klein" href="{{ url_for('verwaltung.etiketten_seite', codes=b.code) }}">Etikett</a>
+            {% endif %}
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <p class="leer-hinweis">{% if filter == "alle" %}Noch keine Behälter angelegt.{% else %}Keine Behälter in dieser Ansicht.{% endif %}</p>
+  {% endif %}
+</form>
+<p class="leise klein">Belegte Behälter lassen sich erst stilllegen, wenn sie ausgebucht sind. Stillgelegte Behälter behalten ihre Historie.</p>
+{% endblock %}

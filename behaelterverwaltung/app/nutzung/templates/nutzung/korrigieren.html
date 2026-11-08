@@ -1,0 +1,32 @@
+{% extends "nutzung/_scan_basis.html" %}
+{% from "nutzung/_status.html" import status_chip, meldungen, fach_kacheln, im_hintergrund %}
+{% set code_anzeige = behaelter.code %}
+{% block titel %}{{ behaelter.code }} · korrigieren{% endblock %}
+{% block status %}{{ status_chip("belegt") }}{% endblock %}
+{% block hauptteil %}
+<form class="scan-form" method="post" action="{{ url_for('nutzung.korrigieren', code=behaelter.code) }}" {{ im_hintergrund() }}>
+  <input type="hidden" name="csrf" value="{{ csrf_token() }}">
+
+  <main class="seite scan-inhalt">
+    {{ meldungen(None, fehler) }}
+    <h1>Eintrag korrigieren</h1>
+
+    <div class="feld">
+      <label for="inhalt">Inhalt</label>
+      <input id="inhalt" name="inhalt" type="text" required maxlength="120" value="{{ werte.inhalt or '' }}" autocomplete="off">
+    </div>
+
+    <div class="feld">
+      <label for="beschreibung">Beschreibung <span class="leise">(optional)</span></label>
+      <textarea id="beschreibung" name="beschreibung" rows="3" maxlength="1000">{{ werte.beschreibung or '' }}</textarea>
+    </div>
+
+    {% if faecher %}{{ fach_kacheln(faecher, gewaehlt) }}{% endif %}
+  </main>
+
+  <footer class="aktionsleiste">
+    <button type="submit" class="knopf knopf-haupt knopf-gross">Speichern</button>
+    <a class="knopf knopf-zweit" href="{{ url_for('nutzung.behaelter', code=behaelter.code) }}">Abbrechen</a>
+  </footer>
+</form>
+{% endblock %}

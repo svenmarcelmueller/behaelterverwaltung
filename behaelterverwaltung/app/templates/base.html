@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="color-scheme" content="light dark">
+  <meta name="apple-mobile-web-app-title" content="Behälter">
+  {# Auch Fehlerseiten (409 Behälter belegt, 400 CSRF …) einblenden, nicht stillschweigend verwerfen #}
+  <meta name="htmx-config" content='{"responseHandling":[{"code":"204","swap":false},{"code":"...","swap":true,"error":false}]}'>
+  <title>{% block titel %}Behälterverwaltung{% endblock %}</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='app.css') }}?v={{ version }}">
+  <script src="{{ url_for('static', filename='vendor/htmx.min.js') }}?v=2.0.4" defer></script>
+  <script src="{{ url_for('static', filename='app.js') }}?v={{ version }}" defer></script>
+</head>
+<body class="modus-{{ modus }} {% block body_klasse %}{% endblock %}">
+  {% block kopf %}
+  <header class="kopf">
+    <div class="kopf-innen">
+      <a class="marke" href="{{ url_for('nutzung.uebersicht') }}">Behälterverwaltung</a>
+      <nav class="hauptnav" aria-label="Hauptnavigation">
+        {% set ep = request.endpoint or '' %}
+        <a href="{{ url_for('nutzung.uebersicht') }}" {% if ep == 'nutzung.uebersicht' %}aria-current="page"{% endif %}>Übersicht</a>
+        <a href="{{ url_for('nutzung.hilfe') }}" {% if ep == 'nutzung.hilfe' %}aria-current="page"{% endif %}>Hilfe</a>
+        {% if modus == "ingress" %}
+        <a href="{{ url_for('verwaltung.start') }}" {% if ep.startswith('verwaltung.') %}aria-current="page"{% endif %}>Verwaltung</a>
+        {% endif %}
+      </nav>
+    </div>
+  </header>
+  {% endblock %}
+
+  {% block hauptteil %}
+  <main class="seite">
+    {% block inhalt %}{% endblock %}
+  </main>
+  {% endblock %}
+
+  {% block unten %}
+  <nav class="tabbar" aria-label="Navigation">
+    {% set ep = request.endpoint or '' %}
+    <a href="{{ url_for('nutzung.uebersicht') }}" {% if ep == 'nutzung.uebersicht' %}aria-current="page"{% endif %}>
+      {% include "icons/uebersicht.svg" %}<span>Übersicht</span>
+    </a>
+    <a class="tabbar-scan" href="{{ url_for('nutzung.hilfe') }}">
+      <span class="tabbar-scan-knopf">{% include "icons/scan.svg" %}</span><span>Scannen</span>
+    </a>
+    <a href="{{ url_for('nutzung.hilfe') }}" {% if ep == 'nutzung.hilfe' %}aria-current="page"{% endif %}>
+      {% include "icons/hilfe.svg" %}<span>Hilfe</span>
+    </a>
+  </nav>
+  {% endblock %}
+
+  <dialog id="name-dialog" class="dialog">
+    <form method="dialog" class="dialog-form">
+      <h2>Wer bist du?</h2>
+      <p>Der Name wird nur auf diesem Gerät gespeichert und bei Einlagerungen vermerkt.</p>
+      <label for="name-eingabe">Name</label>
+      <input id="name-eingabe" type="text" maxlength="40" autocomplete="given-name" placeholder="z. B. Anna">
+      <div class="knopfreihe">
+        <button type="submit" value="abbrechen" class="knopf knopf-zweit">Abbrechen</button>
+        <button type="submit" value="speichern" class="knopf knopf-haupt">Speichern</button>
+      </div>
+    </form>
+  </dialog>
+</body>
+</html>

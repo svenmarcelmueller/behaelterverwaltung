@@ -1,0 +1,30 @@
+{% extends "nutzung/_scan_basis.html" %}
+{% from "nutzung/_status.html" import status_chip %}
+{% set code_anzeige = behaelter.code %}
+{% block titel %}{{ behaelter.code }} · Historie{% endblock %}
+{% block status %}{{ status_chip(behaelter.status) }}{% endblock %}
+{% block hauptteil %}
+<main class="seite scan-inhalt">
+  <p><a class="link-mit-icon" href="{{ url_for('nutzung.behaelter', code=behaelter.code) }}">{% include "icons/zurueck.svg" %}Zum Behälter</a></p>
+  <h1>Historie</h1>
+  {% if eintraege %}
+  <ol class="historie">
+    {% for e in eintraege %}
+    <li class="karte">
+      <div class="karte-titel">
+        <span>{{ e.inhalt_name }}</span>
+        {% if not e.ausgelagert_am %}<span class="chip chip-belegt">Aktuell</span>{% endif %}
+      </div>
+      {% if e.beschreibung %}<p class="beschreibung">{{ e.beschreibung }}</p>{% endif %}
+      <p class="karte-meta">
+        Fach {{ e.fach_name or "–" }} · eingelagert {{ e.eingelagert_am | datum }}{% if e.eingelagert_von %} von {{ e.eingelagert_von }}{% endif %}
+        {% if e.ausgelagert_am %}<br>entnommen {{ e.ausgelagert_am | datum }}{% if e.ausgelagert_von %} von {{ e.ausgelagert_von }}{% endif %}{% endif %}
+      </p>
+    </li>
+    {% endfor %}
+  </ol>
+  {% else %}
+  <p class="leer-hinweis">In diesem Behälter lag noch nichts.</p>
+  {% endif %}
+</main>
+{% endblock %}

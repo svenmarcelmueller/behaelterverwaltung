@@ -1,0 +1,146 @@
+{% extends "verwaltung/_basis.html" %}
+{% block titel %}Etiketten · Verwaltung{% endblock %}
+{% block verwaltung %}
+{% if not basis_url %}
+<p class="hinweis hinweis-fehler">Ohne Basis-URL gibt es keine QR-Codes. Trag sie in Home Assistant bei der App unter „Konfiguration“ ein, z. B. <span class="mono">http://192.168.1.10:8099</span>, und starte die App neu.</p>
+{% endif %}
+
+<div class="etiketten-raster" id="etiketten-inhalt">
+  <div class="spalte">
+    <section class="karte" aria-labelledby="druck-titel">
+      <h2 id="druck-titel">Etiketten drucken</h2>
+
+      {# Änderungen an Auswahl, Größe oder Auffüllen aktualisieren die Vorschau sofort #}
+      <form id="einstellung-form" method="get" action="{{ url_for('verwaltung.etiketten_seite') }}"
+            hx-get="{{ url_for('verwaltung.etiketten_seite') }}" hx-trigger="change"
+            hx-target="#etiketten-inhalt" hx-select="#etiketten-inhalt" hx-swap="outerHTML" hx-push-url="true">
+        {% if auswahl %}<input type="hidden" name="codes" value="{{ auswahl|join(',') }}">{% endif %}
+
+        <fieldset class="optionen">
+          <legend>Welche Behälter?</legend>
+          <label class="option"><input type="radio" name="quelle" value="offen" {% if quelle == "offen" %}checked{% endif %}>
+            Alle noch nicht gedruckten ({{ offen|length }})</label>
+          {% if auswahl %}
+          <label class="option"><input type="radio" name="quelle" value="auswahl" {% if quelle == "auswahl" %}checked{% endif %}>
+            Auswahl aus der Liste ({{ auswahl|length }})</label>
+          {% endif %}
+        </fieldset>
+
+        <div class="feld">
+          <label for="format">Aufklebergröße</label>
+          <select id="format" name="format">
+            {% for f in formate %}
+            <option value="{{ f.id }}" {% if f.id == fmt.id %}selected{% endif %}>{{ f.name }}</option>
+            {% endfor %}
+          </select>
+        </div>
+
+        {% if r.pro_blatt > 1 %}
+        <div class="feld">
+          <label for="start">Angebrochener Bogen: beginnen bei</label>
+          <select id="start" name="start">
+            {% for p in vorschau %}
+            <option value="{{ p.nummer }}" {% if p.nummer == start + 1 %}selected{% endif %}>
+              {%- if p.nummer == 1 %}Platz 1 · voller Bogen{% else %}Platz {{ p.nummer }} · Zeile {{ (p.nummer - 1) // r.spalten + 1 }}, Spalte {{ (p.nummer - 1) % r.spalten + 1 }}{% endif -%}
+            </option>
+            {% endfor %}
+          </select>
+          <p class="leise klein">Oder in der Vorschau auf den ersten noch vorhandenen Aufkleber tippen.</p>
+        </div>
+        {% endif %}
+
+        <label class="option">
+          <input type="checkbox" name="auffuellen" value="1" {% if auffuellen %}checked{% endif %}>
+          <span>Freie Plätze mit neuen Behältern auffüllen{% if frei %} (+{{ frei }}){% endif %}</span>
+        </label>
+        <noscript><button type="submit" class="knopf knopf-zweit">Vorschau aktualisieren</button></noscript>
+      </form>
+
+      <dl class="fakten fakten-klein">
+        <div><dt>Pro Blatt</dt><dd>{{ r.spalten }} × {{ r.zeilen }} = {{ r.pro_blatt }} Aufkleber</dd></div>
+        <div><dt>Zu drucken</dt><dd>{{ codes|length + (frei if auffuellen else 0) }} Etiketten auf {{ blaetter }} Blatt</dd></div>
+        {% if start %}<div><dt>Erster Bogen</dt><dd>ab Platz {{ start + 1 }}, {{ start }} schon abgezogen</dd></div>{% endif %}
+        <div><dt>QR-Code</dt><dd>{{ "%.0f"|format(a.qr_mm) }} × {{ "%.0f"|format(a.qr_mm) }} mm</dd></div>
+      </dl>
+      {% if a.qr_zu_klein %}
+      <p class="hinweis hinweis-fehler">Der QR-Code wird kleiner als 15 mm und lässt sich nur aus kurzer Entfernung scannen.</p>
+      {% endif %}
+
+      {# Bewusst ohne hx-boost: die Druckseite hat eigene Stile im <head>, die htmx beim Austausch nicht übernimmt #}
+      <form method="post" action="{{ url_for('verwaltung.etiketten_drucken') }}">
+        <input type="hidden" name="csrf" value="{{ csrf_token() }}">
+        <input type="hidden" name="format" value="{{ fmt.id }}">
+        <input type="hidden" name="codes" value="{{ codes|join(',') }}">
+        <input type="hidden" name="start" value="{{ start + 1 }}">
+        {% if auffuellen %}<input type="hidden" name="auffuellen" value="1">{% endif %}
+        <button type="submit" class="knopf knopf-haupt knopf-gross" {% if not basis_url or (not codes and not auffuellen) %}disabled{% endif %}>Druckseite öffnen</button>
+      </form>
+      <p class="leise klein">Auf der Druckseite im Druckdialog <strong>Skalierung 100 %</strong> (bzw. „Tatsächliche Größe“) wählen und keine Kopf- und Fußzeilen. Erst auf Normalpapier probedrucken und gegen das Licht mit dem Etikettenbogen vergleichen; kleine Verschiebungen gleicht der Druckversatz unter Einstellungen aus.</p>
+    </section>
+
+    <section class="karte" aria-labelledby="format-titel">
+      <h2 id="format-titel">Aufklebergrößen</h2>
+      <ul class="format-liste">
+        {% for f in formate %}
+        <li>
+          <span>{{ f.name }}<br><span class="leise klein">
+            {%- if f.spalten -%}
+            vorgestanzt · {{ f.spalten }} × {{ f.zeilen }} = {{ f.spalten * f.zeilen }} pro Bogen
+            {%- else -%}
+            ungestanzte Folie · {{ "%g"|format(f.etikett_b_mm) }} × {{ "%g"|format(f.etikett_h_mm) }} mm · Rand {{ "%g"|format(f.rand_mm) }} mm · Abstand {{ "%g"|format(f.abstand_mm) }} mm
+            {%- endif -%}
+          </span></span>
+          {% if formate|length > 1 %}
+          <form method="post" action="{{ url_for('verwaltung.format_loeschen', format_id=f.id) }}" hx-boost="true">
+            <input type="hidden" name="csrf" value="{{ csrf_token() }}">
+            <button type="submit" class="knopf knopf-zweit knopf-klein" data-frage="Größe „{{ f.name }}“ löschen?">Löschen</button>
+          </form>
+          {% endif %}
+        </li>
+        {% endfor %}
+      </ul>
+
+      <details class="aufklapper">
+        <summary>Eigene Größe anlegen (ungestanzte Folie, z. B. HERMA 9500)</summary>
+        <form class="format-form" method="post" action="{{ url_for('verwaltung.format_anlegen') }}" hx-boost="true">
+          <input type="hidden" name="csrf" value="{{ csrf_token() }}">
+          <div class="feld"><label for="f-name">Name <span class="leise">(optional)</span></label>
+            <input id="f-name" name="name" type="text" maxlength="60" placeholder="z. B. HERMA 9500 · 45 × 45 mm"></div>
+          <div class="zahlen-raster">
+            <div class="feld"><label for="f-b">Breite (mm)</label><input id="f-b" name="etikett_b_mm" type="text" inputmode="decimal" value="50" required></div>
+            <div class="feld"><label for="f-h">Höhe (mm)</label><input id="f-h" name="etikett_h_mm" type="text" inputmode="decimal" value="50" required></div>
+            <div class="feld"><label for="f-r">Rand (mm)</label><input id="f-r" name="rand_mm" type="text" inputmode="decimal" value="5" required></div>
+            <div class="feld"><label for="f-a">Abstand (mm)</label><input id="f-a" name="abstand_mm" type="text" inputmode="decimal" value="0" required></div>
+          </div>
+          <label class="option"><input type="checkbox" name="schnittlinien" value="1" checked> Schnittlinien drucken</label>
+          <p class="leise klein">Für Folie ohne Stanzung: Die App setzt so viele Aufkleber wie möglich mittig aufs A4-Blatt und druckt Schnittlinien. Rand = Bereich, den der Drucker nicht bedrucken kann. Abstand 0 heißt: Aufkleber stoßen aneinander, ein Schnitt trennt zwei.</p>
+          <button type="submit" class="knopf knopf-haupt">Speichern</button>
+        </form>
+      </details>
+    </section>
+  </div>
+
+  <section class="spalte vorschau" aria-label="Vorschau des ersten Blatts">
+    <p class="leise klein">Vorschau Blatt 1{% if blaetter > 1 %} von {{ blaetter }}{% endif %}</p>
+    <div class="blatt-vorschau" style="aspect-ratio: {{ r.blatt_b }} / {{ r.blatt_h }}">
+      {# Jeder Platz ist ein Knopf: Antippen setzt dort den Beginn (siehe app.js, data-startplatz) #}
+      {% for p in vorschau %}
+      <button type="button" class="vorschau-platz vorschau-{{ p.art }}" data-startplatz="{{ p.nummer }}"
+              aria-label="Bei Platz {{ p.nummer }} beginnen" title="Bei Platz {{ p.nummer }} beginnen"
+              style="left: {{ p.x / r.blatt_b * 100 }}%; top: {{ p.y / r.blatt_h * 100 }}%; width: {{ r.etikett_b / r.blatt_b * 100 }}%; height: {{ r.etikett_h / r.blatt_h * 100 }}%">
+        {% if p.art in ("druck", "neu") %}
+        <span class="vorschau-qr" style="left: {{ a.qr_x / r.etikett_b * 100 }}%; top: {{ a.qr_y / r.etikett_h * 100 }}%; width: {{ a.qr_mm / r.etikett_b * 100 }}%; height: {{ a.qr_mm / r.etikett_h * 100 }}%"></span>
+        <span class="vorschau-code" style="left: {{ a.text_x / r.etikett_b * 100 }}%; top: {{ a.text_y / r.etikett_h * 100 }}%; width: {{ a.text_b / r.etikett_b * 100 }}%; height: {{ a.text_h / r.etikett_h * 100 }}%">{{ "neu" if p.art == "neu" else p.code }}</span>
+        {% endif %}
+      </button>
+      {% endfor %}
+    </div>
+    <div class="legende klein">
+      {% if start %}<span><span class="legende-feld legende-weg" aria-hidden="true"></span>schon abgezogen</span>{% endif %}
+      <span><span class="legende-feld legende-druck" aria-hidden="true"></span>wird gedruckt</span>
+      {% if auffuellen %}<span><span class="legende-feld legende-neu" aria-hidden="true"></span>neuer Behälter</span>{% endif %}
+      <span><span class="legende-feld legende-frei" aria-hidden="true"></span>bleibt frei</span>
+    </div>
+  </section>
+</div>
+{% endblock %}

@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Etiketten drucken · {{ codes|length }} Stück</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='app.css') }}?v={{ version }}">
+  <script src="{{ url_for('static', filename='vendor/htmx.min.js') }}?v=2.0.4" defer></script>
+  <script src="{{ url_for('static', filename='app.js') }}?v={{ version }}" defer></script>
+  <style>
+    @page { size: {{ r.blatt_b }}mm {{ r.blatt_h }}mm; margin: 0; }
+    .blatt { width: {{ r.blatt_b }}mm; height: {{ r.blatt_h }}mm; }
+    .blatt-inhalt { transform: translate({{ versatz_x }}mm, {{ versatz_y }}mm); }
+    .etikett { width: {{ r.etikett_b }}mm; height: {{ r.etikett_h }}mm; }
+    .etikett-qr { left: {{ a.qr_x }}mm; top: {{ a.qr_y }}mm; width: {{ a.qr_mm }}mm; height: {{ a.qr_mm }}mm; }
+    .etikett-code { left: {{ a.text_x }}mm; top: {{ a.text_y }}mm; width: {{ a.text_b }}mm; height: {{ a.text_h }}mm;
+                    font-size: {{ a.schrift_mm }}mm; }
+  </style>
+</head>
+<body class="druckansicht">
+  <div class="druck-leiste">
+    <a class="knopf knopf-zweit" href="{{ url_for('verwaltung.etiketten_seite', format=fmt.id, start=start + 1 if start else None) }}">Zurück</a>
+    <button type="button" class="knopf knopf-haupt" onclick="window.print()">Drucken</button>
+    <form method="post" action="{{ url_for('verwaltung.etiketten_gedruckt') }}">
+      <input type="hidden" name="csrf" value="{{ csrf_token() }}">
+      <input type="hidden" name="codes" value="{{ codes|join(',') }}">
+      <button type="submit" class="knopf knopf-zweit">Als gedruckt markieren</button>
+    </form>
+    <span class="leise klein">{{ codes|length }} Etiketten · {{ blaetter|length }} Blatt{% if start %} · erster Bogen ab Platz {{ start + 1 }}{% endif %} · {{ fmt.name }} · Skalierung 100 %, ohne Kopf-/Fußzeilen</span>
+  </div>
+
+  {% if not basis_url %}
+  <p class="hinweis hinweis-fehler">Ohne Basis-URL können keine QR-Codes erzeugt werden.</p>
+  {% endif %}
+
+  {% for blatt in blaetter %}
+  <section class="blatt" aria-label="Blatt {{ loop.index }}">
+    <div class="blatt-inhalt">
+      {% if fmt.schnittlinien %}
+      {% for x in r.schnitt_x() %}<span class="schnitt schnitt-senkrecht" style="left: {{ x }}mm"></span>{% endfor %}
+      {% for y in r.schnitt_y() %}<span class="schnitt schnitt-waagerecht" style="top: {{ y }}mm"></span>{% endfor %}
+      {% endif %}
+      {% for platz in blatt %}
+      <div class="etikett" style="left: {{ platz.x }}mm; top: {{ platz.y }}mm">
+        <div class="etikett-qr">{{ platz.qr }}</div>
+        <div class="etikett-code">{{ platz.code }}</div>
+      </div>
+      {% endfor %}
+    </div>
+  </section>
+  {% endfor %}
+</body>
+</html>

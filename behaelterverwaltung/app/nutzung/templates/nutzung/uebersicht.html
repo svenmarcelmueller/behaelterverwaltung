@@ -1,0 +1,73 @@
+{% extends "base.html" %}
+{% block titel %}Übersicht · Behälterverwaltung{% endblock %}
+{% block inhalt %}
+<div class="uebersicht-kopf">
+  <h1>Schrank</h1>
+  <p class="zahlen"><strong>{{ zahlen.belegt }}</strong> belegt · <strong>{{ zahlen.frei }}</strong> frei</p>
+</div>
+
+<section class="kennzahlen" aria-label="Kennzahlen">
+  <div class="kachel"><span class="kachel-label">Belegt</span><span class="kachel-wert">{{ zahlen.belegt }}</span></div>
+  <div class="kachel"><span class="kachel-label">Frei</span><span class="kachel-wert">{{ zahlen.frei }}</span></div>
+  <div class="kachel kachel-breit">
+    <span class="kachel-label">Letzte Einlagerung</span>
+    <span class="kachel-text">{% if letzte %}{{ letzte.inhalt_name }} · {{ letzte.eingelagert_am | datum_kurz }}{% else %}–{% endif %}</span>
+  </div>
+</section>
+
+<form id="filter" class="filter" method="get" action="{{ url_for('nutzung.uebersicht') }}"
+      hx-get="{{ url_for('nutzung.liste') }}" hx-target="#liste"
+      hx-trigger="input changed delay:250ms from:#suche, search from:#suche, change from:.filter-auto, submit">
+  <div class="suche">
+    <label for="suche" class="nur-vorlesen">Suchen</label>
+    {% include "icons/suche.svg" %}
+    <input id="suche" name="q" type="search" value="{{ f.q }}" placeholder="Inhalt, Behälter oder Code suchen …" autocomplete="off" enterkeyhint="search">
+  </div>
+
+  <fieldset class="chips">
+    <legend class="nur-vorlesen">Fach</legend>
+    <label class="chip-auswahl"><input class="filter-auto" type="radio" name="fach" value="" {% if not f.fach %}checked{% endif %}><span>Alle Fächer</span></label>
+    {% for fach in faecher %}
+    <label class="chip-auswahl"><input class="filter-auto" type="radio" name="fach" value="{{ fach.id }}" {% if f.fach == fach.id %}checked{% endif %}><span>{{ fach.name }}</span></label>
+    {% endfor %}
+  </fieldset>
+
+  <div class="filter-zeile">
+    <div class="feld feld-klein">
+      <label for="status">Status</label>
+      <select id="status" name="status" class="filter-auto">
+        <option value="" {% if not f.status %}selected{% endif %}>Alle</option>
+        <option value="belegt" {% if f.status == "belegt" %}selected{% endif %}>Belegt</option>
+        <option value="leer" {% if f.status == "leer" %}selected{% endif %}>Leer</option>
+      </select>
+    </div>
+    <div class="feld feld-klein">
+      <label for="sort">Sortierung</label>
+      <select id="sort" name="sort" class="filter-auto">
+        {% for wert, name in sortier_namen.items() %}
+        <option value="{{ wert }}" {% if f.sort == wert %}selected{% endif %}>{{ name }}</option>
+        {% endfor %}
+      </select>
+    </div>
+  </div>
+
+  <details class="zeitraum" {% if f.von or f.bis %}open{% endif %}>
+    <summary>Zeitraum{% if f.von or f.bis %}: {{ f.von or "…" }} – {{ f.bis or "…" }}{% else %}: alle{% endif %}</summary>
+    <div class="zeitraum-felder">
+      <div class="feld feld-klein">
+        <label for="von">Von</label>
+        <input id="von" name="von" type="date" value="{{ f.von }}" class="filter-auto">
+      </div>
+      <div class="feld feld-klein">
+        <label for="bis">Bis</label>
+        <input id="bis" name="bis" type="date" value="{{ f.bis }}" class="filter-auto">
+      </div>
+    </div>
+  </details>
+  <noscript><button type="submit" class="knopf knopf-zweit">Filtern</button></noscript>
+</form>
+
+<div id="liste" aria-live="polite">
+  {% include "nutzung/_liste.html" %}
+</div>
+{% endblock %}

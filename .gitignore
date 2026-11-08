@@ -1,0 +1,6 @@
+.venv/
+__pycache__/
+.pytest_cache/
+dev-data/
+# Konzept und Entwürfe bleiben lokal (enthalten Links zu privaten Dokumenten)
+konzept/

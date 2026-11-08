@@ -1,0 +1,50 @@
+{% extends "verwaltung/_basis.html" %}
+{% block titel %}Einstellungen · Verwaltung{% endblock %}
+{% block verwaltung %}
+<section class="karte" aria-labelledby="url-titel">
+  <h2 id="url-titel">Basis-URL für die QR-Codes</h2>
+  <p class="mono">{{ basis_url or "nicht eingestellt" }}</p>
+  <p class="leise klein">Wird in Home Assistant bei der App unter „Konfiguration“ eingestellt. Ändert sie sich, passen bereits gedruckte Etiketten nicht mehr – die IP von Home Assistant sollte im Router fest reserviert sein.</p>
+</section>
+
+<section class="karte" aria-labelledby="ha-titel">
+  <h2 id="ha-titel">Sensoren in Home Assistant</h2>
+  {% if ha %}
+  <dl class="fakten fakten-klein">
+    <div><dt>Zuletzt gesendet</dt><dd>{{ ha.letzter_erfolg or "noch nicht" }}</dd></div>
+    {% if ha.letzter_fehler %}<div><dt>Fehler</dt><dd class="warn-text">{{ ha.letzter_fehler }}</dd></div>{% endif %}
+  </dl>
+  <p class="leise klein">Gesendet wird nach jeder Änderung und alle 5 Minuten: <span class="mono">sensor.behaelter_frei</span>, <span class="mono">sensor.behaelter_belegt</span>, <span class="mono">sensor.behaelter_letzte_einlagerung</span>. Eine Beispielkarte fürs Dashboard steht in der Dokumentation der App.</p>
+  <form method="post" action="{{ url_for('verwaltung.sensoren_senden') }}" hx-boost="true" hx-disabled-elt="find button">
+    <input type="hidden" name="csrf" value="{{ csrf_token() }}">
+    <button type="submit" class="knopf knopf-zweit">Jetzt senden</button>
+  </form>
+  {% else %}
+  <p class="leise klein">Keine Verbindung eingerichtet. In Home Assistant geschieht das automatisch; lokal beim Entwickeln über die Umgebungsvariablen <span class="mono">HA_URL</span> und <span class="mono">HA_TOKEN</span>.</p>
+  {% endif %}
+</section>
+
+<section class="karte" aria-labelledby="versatz-titel">
+  <h2 id="versatz-titel">Druckversatz</h2>
+  <p class="leise klein">Sitzen die Aufkleber auf dem Probedruck nicht genau, das ganze Raster hier verschieben. Positive Werte schieben nach rechts bzw. unten.</p>
+  <form class="formular-zeile" method="post" action="{{ url_for('verwaltung.einstellungen_speichern') }}" hx-boost="true">
+    <input type="hidden" name="csrf" value="{{ csrf_token() }}">
+    <div class="feld feld-schmal"><label for="vx">Waagerecht (mm)</label>
+      <input id="vx" name="versatz_x_mm" type="text" inputmode="decimal" value="{{ '%g'|format(versatz_x) }}"></div>
+    <div class="feld feld-schmal"><label for="vy">Senkrecht (mm)</label>
+      <input id="vy" name="versatz_y_mm" type="text" inputmode="decimal" value="{{ '%g'|format(versatz_y) }}"></div>
+    <button type="submit" class="knopf knopf-haupt">Speichern</button>
+  </form>
+</section>
+
+<section class="karte karte-gefahr" aria-labelledby="reset-titel">
+  <h2 id="reset-titel">Alle Behälter löschen</h2>
+  <p class="klein">Löscht alle {{ anzahl.alle + anzahl.stillgelegt }} Behälter samt Historie, z. B. nach der Testphase. Fächer, Aufklebergrößen und Einstellungen bleiben. <strong>Bereits gedruckte Etiketten werden danach ungültig.</strong></p>
+  <form class="formular-zeile" method="post" action="{{ url_for('verwaltung.zuruecksetzen') }}" hx-boost="true">
+    <input type="hidden" name="csrf" value="{{ csrf_token() }}">
+    <div class="feld feld-breit"><label for="bestaetigung">Zum Bestätigen <strong>LÖSCHEN</strong> eintippen</label>
+      <input id="bestaetigung" name="bestaetigung" type="text" autocomplete="off" required></div>
+    <button type="submit" class="knopf knopf-gefahr">Alles löschen</button>
+  </form>
+</section>
+{% endblock %}

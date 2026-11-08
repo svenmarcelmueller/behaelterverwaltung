@@ -639,6 +639,8 @@ input[type="text"]:focus, input[type="search"]:focus, textarea:focus, select:foc
 .formular-zeile { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 12px; margin-bottom: 8px; }
 .formular-zeile .feld { margin: 0; }
 .formular-zeile .knopf { min-height: 48px; }
+.unterueberschrift { margin: 24px 0 6px; font-size: 16px; font-weight: 600; }
+input[type=file] { font: inherit; max-width: 100%; }
 .feld-schmal { flex: 0 1 150px; }
 .feld-breit { flex: 999 1 260px; }
 input[type="number"] { width: 100%; min-height: 48px; padding: 0 14px; border: 1px solid var(--rahmen); border-radius: var(--radius-klein); background: var(--flaeche); color: var(--text); font: inherit; font-size: 16px; }

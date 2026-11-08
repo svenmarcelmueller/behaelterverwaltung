@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.9.0
+
+- Verwaltung → Einstellungen: **Daten herunterladen** als JSON-Datei (Behälter, Einlagerungen samt Historie, Fächer, Aufklebergrößen, Einstellungen) und **Daten einspielen** in eine neu installierte App. Einspielen geht nur, solange noch keine Behälter angelegt sind, und gelingt ganz oder gar nicht. Anleitung zum Umzug in der Dokumentation.
+- Keine Änderung am Datenbankschema.
+
 ## 0.8.0
 
 - Etiketten: **angebrochene Bögen weiterverwenden.** Unter „Angebrochener Bogen: beginnen bei“ den ersten noch vorhandenen Aufkleber wählen (oder in der Vorschau antippen). Die Plätze davor bleiben auf dem ersten Bogen frei, weitere Bögen beginnen wieder oben links. „Auffüllen“ füllt nur den Rest des Bogens.

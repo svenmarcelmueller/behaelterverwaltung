@@ -16,6 +16,20 @@ Behälter bekommen einen Aufkleber mit QR-Code. Wer ihn mit dem iPhone scannt, s
 
 Die Daten liegen im App-eigenen Speicher und bleiben bei Updates erhalten. Sie sind in den Home-Assistant-Sicherungen enthalten.
 
+## Daten sichern und umziehen
+
+Unter **Verwaltung → Einstellungen → Daten herunterladen** gibt es eine Datei mit allen Daten. Die Daten sind außerdem in jeder Home-Assistant-Sicherung enthalten.
+
+Umzug in eine neu installierte App, z. B. von einer selbst kopierten Version zur Installation aus diesem Repository:
+
+1. Beide Apps auf **dieselbe Version** bringen.
+2. Zur Sicherheit eine Home-Assistant-Teilsicherung der alten App anlegen.
+3. In der alten App **Daten herunterladen**.
+4. Die alte App **stoppen**, denn beide nutzen Port 8099. Danach die neue App starten und dieselbe Basis-URL eintragen.
+5. In der neuen App unter Einstellungen die Datei **einspielen**. Das geht nur, solange dort noch keine Behälter angelegt sind.
+6. Prüfen, ob alles da ist, und ein Etikett scannen. Die gedruckten QR-Codes gelten weiter.
+7. Erst dann die alte App deinstallieren.
+
 ## Einstellungen
 
 - **Basis-URL:** Adresse für die QR-Codes, z. B. `http://192.168.1.10:8099`.

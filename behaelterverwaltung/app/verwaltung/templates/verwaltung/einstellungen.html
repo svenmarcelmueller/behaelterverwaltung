@@ -37,6 +37,26 @@
   </form>
 </section>
 
+<section class="karte" aria-labelledby="sicherung-titel">
+  <h2 id="sicherung-titel">Daten sichern und umziehen</h2>
+  <p class="leise klein">Eine Datei mit allen Behältern, Einlagerungen samt Historie, Fächern, Aufklebergrößen und Einstellungen – z. B. für den Umzug in eine neu installierte App oder als zusätzliche Sicherung.</p>
+  {# Bewusst ohne htmx: der Browser soll die Datei herunterladen, nicht in die Seite laden #}
+  <a class="knopf knopf-zweit" href="{{ url_for('verwaltung.export') }}" download>Daten herunterladen</a>
+
+  <h3 class="unterueberschrift">Daten einspielen</h3>
+  {% if leer %}
+  <p class="leise klein">Geht nur, solange hier noch keine Behälter angelegt sind. Fächer, Aufklebergrößen und Einstellungen werden durch die aus der Datei ersetzt. Beide Apps müssen dieselbe Version haben.</p>
+  <form class="formular-zeile" method="post" action="{{ url_for('verwaltung.import_') }}" enctype="multipart/form-data">
+    <input type="hidden" name="csrf" value="{{ csrf_token() }}">
+    <div class="feld feld-breit"><label for="datei">Exportdatei (.json)</label>
+      <input id="datei" name="datei" type="file" accept=".json,application/json" required></div>
+    <button type="submit" class="knopf knopf-haupt">Einspielen</button>
+  </form>
+  {% else %}
+  <p class="leise klein">Nicht möglich, weil hier schon Behälter angelegt sind – so kann nichts versehentlich überschrieben werden.</p>
+  {% endif %}
+</section>
+
 <section class="karte karte-gefahr" aria-labelledby="reset-titel">
   <h2 id="reset-titel">Alle Behälter löschen</h2>
   <p class="klein">Löscht alle {{ anzahl.alle + anzahl.stillgelegt }} Behälter samt Historie, z. B. nach der Testphase. Fächer, Aufklebergrößen und Einstellungen bleiben. <strong>Bereits gedruckte Etiketten werden danach ungültig.</strong></p>

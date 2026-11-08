@@ -1,6 +1,6 @@
 name: "Behälterverwaltung"
 description: "Behälter per QR-Code ein- und auslagern"
-version: "0.8.0"
+version: "0.9.0"
 slug: "behaelterverwaltung"
 init: false
 arch:

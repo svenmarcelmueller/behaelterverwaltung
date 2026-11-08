@@ -1,9 +1,12 @@
 """Verwaltung: Behälter, Etiketten, Fächer, Einstellungen. Nur über Ingress registriert."""
 
-from flask import Blueprint, current_app, flash, redirect, render_template, request, url_for
+import json
+from datetime import date
+
+from flask import Blueprint, Response, current_app, flash, redirect, render_template, request, url_for
 from markupsafe import Markup
 
-from .. import etiketten, qr, repo
+from .. import etiketten, qr, repo, sicherung
 from ..db import hole_db
 
 bp = Blueprint("verwaltung", __name__, template_folder="templates")
@@ -11,6 +14,7 @@ bp = Blueprint("verwaltung", __name__, template_folder="templates")
 FILTER_NAMEN = {"alle": "Alle", "leer": "Leer", "belegt": "Belegt", "offen": "Etikett nicht gedruckt",
                 "stillgelegt": "Stillgelegt"}
 MAX_ETIKETTEN = 500
+MAX_IMPORT_BYTES = 50 * 1024 * 1024  # zehntausende Einlagerungen sind nur wenige MB
 
 
 def _codes_aus(text: str | None) -> list[str]:
@@ -275,7 +279,42 @@ def einstellungen():
         versatz_y=_zahl(repo.einstellung(conn, "versatz_y_mm")),
         anzahl=repo.behaelter_anzahl_je_filter(conn),
         ha=current_app.config["HA"],
+        leer=sicherung.ist_leer(conn),
     )
+
+
+@bp.get("/export")
+def export():
+    daten = sicherung.exportieren(hole_db())
+    name = f"behaelterverwaltung-{date.today().isoformat()}.json"
+    return Response(
+        json.dumps(daten, ensure_ascii=False, indent=1),
+        mimetype="application/json",
+        headers={"Content-Disposition": f'attachment; filename="{name}"', "Cache-Control": "no-store"},
+    )
+
+
+@bp.post("/import")
+def import_():
+    datei = request.files.get("datei")
+    if not datei or not datei.filename:
+        flash("Bitte zuerst eine Exportdatei auswählen.", "fehler")
+        return redirect(url_for(".einstellungen"), 303)
+    inhalt = datei.read(MAX_IMPORT_BYTES + 1)
+    try:
+        if len(inhalt) > MAX_IMPORT_BYTES:
+            raise sicherung.ImportFehler("Die Datei ist zu groß.")
+        try:
+            daten = json.loads(inhalt.decode("utf-8-sig"))
+        except (UnicodeDecodeError, json.JSONDecodeError):
+            raise sicherung.ImportFehler("Das ist keine Exportdatei der Behälterverwaltung.") from None
+        anzahl = sicherung.importieren(hole_db(), daten)
+    except sicherung.ImportFehler as f:
+        flash(f.meldung, "fehler")
+        return redirect(url_for(".einstellungen"), 303)
+    flash(f"Eingespielt: {anzahl['behaelter']} Behälter, {anzahl['einlagerung']} Einlagerungen "
+          f"(mit Historie), {anzahl['fach']} Fächer.", "ok")
+    return redirect(url_for(".behaelter"), 303)
 
 
 @bp.post("/einstellungen/sensoren")
